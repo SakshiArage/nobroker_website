@@ -1,7 +1,123 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import { apiRequest } from './utils/api.js';;
 
+const homes = [
+  ['Modern 2 BHK Apartment','Hinjewadi, Pune','25000',2,'Apartment','Rent','Fully Furnished'], ['Spacious 3 BHK Home','Whitefield, Bengaluru','42000',3,'Apartment','Rent','Semi Furnished'], ['Cozy 1 BHK Apartment','Wakad, Pune','18000',1,'Apartment','Rent','Bachelor Friendly'], ['Sunny 2 BHK Residence','HSR Layout, Bengaluru','31000',2,'Apartment','Rent','Pet Friendly'],
+  ['Premium 2 BHK Flat','Koramangala, Bengaluru','78 Lakh',2,'Apartment','Buy','Ready to Move'], ['Independent Family Villa','Bannerghatta Road, Bengaluru','1.2 Cr',3,'Independent House','Buy','3 Bathrooms'], ['Elegant 3 BHK Flat','Kharadi, Pune','95 Lakh',3,'Apartment','Buy','Gated Community'],
+  ['Private Studio PG','Indiranagar, Bengaluru','15500',1,'Single Sharing','PG','Female'], ['Twin-sharing PG','Koregaon Park, Pune','12000',1,'Twin Sharing','PG','Male'], ['Premium Co-living PG','Hitech City, Hyderabad','18000',1,'Single Sharing','PG','Any Gender']
+].map(([title,location,price,bhk,type,category,tag],id)=>({id,title,location,price,bhk,type,category,tag,image:`https://images.unsplash.com/photo-${['1600210492486-724fe5c67fb0','1600585154340-be6161a56a0c','1600607687920-4e2a09cf159d','1600585152915-d208bec867a1','1618221195710-dd6b41faaea6','1600566753190-17f0baa2a6c3','1600573472550-8090b5e0745e','1600607688969-a5bfcd646154','1615874694520-474822394e73','1524758631624-e2822e304c36'][id]}?auto=format&fit=crop&w=900&q=80`}));
+const config={Rent:{prices:['Any monthly rent','Under 20000','20000 - 40000','40000+'],filters:['Any furnishing','Fully Furnished','Semi Furnished','Unfurnished'],label:'Monthly rent'},Buy:{prices:['Any price','Under 75 Lakh','75 Lakh - 1 Cr','1 Cr+'],filters:['All property types','Apartment','Independent House'],label:'Property price'},PG:{prices:['Any monthly rent','Under 12000','12000 - 16000','16000+'],filters:['Any sharing','Single Sharing','Twin Sharing'],label:'Monthly rent'}};
+function Brand(){return <span className="brand"><b>no</b><i>broker</i><small>ZERO BROKERAGE</small></span>}
+
+function AuthModal({ mode, setMode, close, notify, onAuthSuccess }) {
+  const register = mode === 'register';
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
+
+  const resetAndClose = () => {
+    setError('');
+    close();
+  };
+
+  const submitForm = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const data = register
+        ? await apiRequest('/register', {
+            fullName,
+            email,
+            phone,
+            password,
+            terms_conditions: agreed,
+          })
+        : await apiRequest('/login', { email, password });
+
+      onAuthSuccess(data.data.user);
+      notify(register ? 'Registration successful - welcome to NoBroker!' : 'You are now logged in.');
+      resetAndClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-backdrop" onMouseDown={resetAndClose}>
+      <section className="auth-modal" onMouseDown={(e) => e.stopPropagation()}>
+        <button className="close-modal" onClick={resetAndClose} aria-label="Close">x</button>
+        <Brand />
+
+        <h2>{register ? 'Create your account' : 'Welcome back'}</h2>
+        <p>{register ? 'Register to save properties and contact owners directly.' : 'Login to continue your property search.'}</p>
+        <form onSubmit={submitForm}>
+          {register && (
+            <label>Full name
+              <input required placeholder="Your full name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </label>
+          )}
+          <label>Email address
+            <input required type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </label>
+          {register && (
+            <label>Mobile number
+              <input required type="tel" pattern="[0-9]{10}" placeholder="10-digit mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </label>
+          )}
+          <label>Password
+            <input required type="password" minLength="6" placeholder="Minimum 6 characters" value={password} onChange={(e) => setPassword(e.target.value)} />
+          </label>
+          {register && (
+            <label className="check">
+              <input required type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} /> I agree to the Terms and Privacy Policy.
+            </label>
+          )}
+          {error && <p className="form-error">{error}</p>}
+          <button className="auth-submit" disabled={loading}>
+            {loading ? 'Please wait...' : register ? 'Create account' : 'Login'}
+          </button>
+        </form>
+        <button className="switch-auth" onClick={() => { setError(''); setMode(register ? 'login' : 'register'); }}>
+          {register ? 'Already have an account? Login' : 'New to NoBroker? Register'}
+        </button>
+      </section>
+    </div>
+  );
+}
+
+function App() {
+  const [tab, setTab] = useState('Rent'), [location, setLocation] = useState(''), [bhk, setBhk] = useState('Any BHK'), [price, setPrice] = useState('Any monthly rent'), [filter, setFilter] = useState('Any furnishing'), [auth, setAuth] = useState(null), [notice, setNotice] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const c = config[tab];
+  const notify = text => { setNotice(text); setTimeout(() => setNotice(''), 2600) };
+  const changeTab = x => { setTab(x); setBhk(x === 'PG' ? 'Any room' : 'Any BHK'); setPrice(config[x].prices[0]); setFilter(config[x].filters[0]) };
+  const results = useMemo(() => homes.filter(h => h.category === tab && (!location || h.location.toLowerCase().includes(location.toLowerCase())) && (bhk === 'Any BHK' || bhk === 'Any room' || h.bhk === Number(bhk[0])) && (filter === c.filters[0] || h.type === filter || h.tag === filter)), [tab, location, bhk, filter, c]);
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest('/logout', {});
+    } catch (err) {
+      // even if the request fails, clear the local session state
+    }
+    setCurrentUser(null);
+    notify('You have been logged out.');
+  };
+
+  return <><header className="nav"><a href="#top"><Brand /></a><nav><a href="#listings">Rent</a><a href="#listings">Buy</a><a href="#listings">Commercial</a></nav><div className="nav-actions">{currentUser ? <><span className="hello">Hi, {currentUser.fullName?.split(' ')[0]}</span><button className="login" onClick={handleLogout}>Logout</button></> : <><button className="login" onClick={() => setAuth('login')}>Login</button><button className="register" onClick={() => setAuth('register')}>Register</button></>}<button className="post" onClick={() => notify('Start listing your property - it is free.')}>Post Your Property</button></div></header><main id="top"><section className="hero"><div className="hero-content"><p className="kicker">INDIA'S NO.1 PROPERTY PLATFORM</p><h1>Find your next home with <em>zero brokerage.</em></h1><p>Explore verified properties and connect directly with owners.</p><div className="search-box"><div className="tabs">{['Rent', 'Buy', 'PG'].map(x => <button className={tab === x ? 'active' : ''} onClick={() => changeTab(x)} key={x}>{x}</button>)}</div><div className="search-row"><label><span>Location</span><input value={location} onChange={e => setLocation(e.target.value)} placeholder="Search city, locality or landmark" /></label><button onClick={() => document.querySelector('#listings').scrollIntoView({ behavior: 'smooth' })}>Search properties</button></div></div><div className="stats"><span><b>10,000+</b> verified homes</span><span><b>0</b> brokerage fee</span><span><b>4.7/5</b> customer rating</span></div></div></section><section className="filter-wrap"><div className="filters"><strong>{tab} filters</strong><label className="filter-label">{c.label}<select value={price} onChange={e => setPrice(e.target.value)}>{c.prices.map(x => <option key={x}>{x}</option>)}</select></label>{tab !== 'PG' && <label className="filter-label">BHK<select value={bhk} onChange={e => setBhk(e.target.value)}>{['Any BHK', '1 BHK', '2 BHK', '3 BHK'].map(x => <option key={x}>{x}</option>)}</select></label>}<label className="filter-label">{tab === 'Rent' ? 'Furnishing' : tab === 'Buy' ? 'Property type' : 'Room sharing'}<select value={filter} onChange={e => setFilter(e.target.value)}>{c.filters.map(x => <option key={x}>{x}</option>)}</select></label><button className="clear" onClick={() => { setLocation(''); setBhk(tab === 'PG' ? 'Any room' : 'Any BHK'); setPrice(c.prices[0]); setFilter(c.filters[0]) }}>Clear all</button></div></section><section className="listing-section" id="listings"><div className="section-heading"><div><p className="kicker">VERIFIED {tab.toUpperCase()} PROPERTIES</p><h2>Homes you will love to live in</h2></div><span>{results.length} properties found</span></div><div className="grid">{results.map(h => <article className="card" key={h.id}><img src={h.image} alt={h.title} /><span className="verified">Verified</span><div className="card-body"><h3>{h.title}</h3><p className="place">{h.location}</p><h4>{h.price}<small>{h.category !== 'Buy' ? '/month' : ''}</small></h4><div className="tags"><span>{tab === 'PG' ? h.type : `${h.bhk} BHK`}</span><span>{h.tag}</span></div><button className="contact" onClick={() => currentUser ? notify(`Request sent to the owner of ${h.title}.`) : (setAuth('login'), notify('Please login to contact the owner.'))}>Contact Owner</button></div></article>)}</div>{!results.length && <div className="empty">No homes matched these filters. Try a different search.</div>}</section><section className="owner-banner"><div><p className="kicker">ARE YOU A PROPERTY OWNER?</p><h2>Find the right tenant, faster.</h2><p>List your property for free and connect directly with genuine seekers.</p><button onClick={() => notify('Start listing your property - it is free.')}>Post Your Property - It's Free</button></div><div className="banner-art">HOME</div></section></main><footer><Brand /><p>India's property platform connecting owners and seekers directly.</p><div className="footer-links"><a>About us</a><a>Careers</a><a>Help center</a><a>Terms and privacy</a></div><small>Copyright 2026 NoBroker-inspired UI demo.</small></footer>{auth && <AuthModal mode={auth} setMode={setAuth} close={() => setAuth(null)} notify={notify} onAuthSuccess={setCurrentUser} />} {notice && <div className="toast">{notice}</div>}</>
+}
+createRoot(document.getElementById('app')).render(<App />);
 function Brand() {
   return <span className="brand"><b>no</b><i>broker</i><small>ZERO BROKERAGE</small></span>;
 }
