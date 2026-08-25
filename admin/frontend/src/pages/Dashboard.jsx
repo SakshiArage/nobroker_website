@@ -42,6 +42,7 @@ function Dashboard() {
           collapsed={collapsed}
           setCollapsed={setCollapsed}
           onLogout={() => navigate("/admin/login")}
+          title="Dashboard"
         />
 
         {/* CONTENT */}
