@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-function Header({ collapsed, setCollapsed, onLogout }) {
+function Header({ collapsed, setCollapsed, onLogout, title = "Dashboard" }) {
 
   const [profileOpen, setProfileOpen] = useState(false);
 
@@ -23,7 +23,7 @@ function Header({ collapsed, setCollapsed, onLogout }) {
           <Menu size={23} />
         </button>
 
-        <h1>Dashboard</h1>
+        <h1>{title}</h1>
 
       </div>
 

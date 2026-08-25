@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -12,21 +13,24 @@ import {
   ShieldCheck,
   Sliders,
   LogOut,
-  ChevronRight,
-  Menu 
+  ChevronRight
 } from "lucide-react";
 
 function Sidebar({ collapsed, setCollapsed, onLogout }) {
+
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const menuItems = [
     {
       name: "Dashboard",
       icon: LayoutDashboard,
-      active: true
+      path: "/admin/dashboard"
     },
     {
       name: "User Management",
       icon: Users,
+      path: "/admin/users",
       arrow: true
     },
     {
@@ -104,14 +108,18 @@ function Sidebar({ collapsed, setCollapsed, onLogout }) {
         {menuItems.map((item) => {
 
           const Icon = item.icon;
+          const isActive = item.path
+            ? location.pathname.startsWith(item.path)
+            : false;
 
           return (
             <button
               key={item.name}
               className={`sidebar-item ${
-                item.active ? "sidebar-item-active" : ""
+                isActive ? "sidebar-item-active" : ""
               }`}
               title={collapsed ? item.name : ""}
+              onClick={() => item.path && navigate(item.path)}
             >
 
               <Icon size={21} />
