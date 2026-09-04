@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-
 import { useAuth } from './features/auth/useAuth';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './features/browsing/LandingPage';
+import RentalAgreementPage from './features/browsing/RentalAgreementPage';
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import PropertyChoicePage from './features/properties/PropertyChoicePage';
@@ -19,7 +20,7 @@ function PublicRoutes() {
   const goToChoices = () => navigate('/choices', { replace: true });
 
   if (user) return <Navigate to="/choices" replace />;
-  return <><LandingPage onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} />
+  return <><LandingPage onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} onRentalAgreement={() => navigate('/rental-agreement')} />
     {location.pathname === '/login' && <LoginPage onClose={() => navigate('/')} onSuccess={goToChoices} onRegister={() => navigate('/register')} />}
     {location.pathname === '/register' && <RegisterPage onClose={() => navigate('/')} onSuccess={goToChoices} onLogin={() => navigate('/login')} />}
   </>;
@@ -52,6 +53,7 @@ export default function App() {
     <Route path="/choices" element={<ProtectedRoute><ChoiceRoute /></ProtectedRoute>} />
     <Route path="/buy-home" element={<ProtectedRoute><BuyHomePage onBack={() => navigate('/choices')} /></ProtectedRoute>} />
     <Route path="/rent-home" element={<ProtectedRoute><RentHomePage onBack={() => navigate('/choices')} /></ProtectedRoute>} />
+    <Route path="/rental-agreement" element={<RentalAgreementPage onBack={() => navigate('/')} />} />
     <Route
       path="/list-property/verify"
       element={<ProtectedRoute><ListPropertyVerification user={user} onClose={() => navigate('/choices')} onComplete={() => navigate('/list-property')} /></ProtectedRoute>}
