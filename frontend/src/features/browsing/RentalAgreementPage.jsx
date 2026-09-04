@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Brand from '../../components/Brand';
 import Footer from '../../components/Footer';
 
@@ -85,6 +85,11 @@ export default function RentalAgreementPage({ onBack }) {
   const [duration, setDuration] = useState('11');
   const [notice, setNotice] = useState('');
   const [openFaq, setOpenFaq] = useState(null);
+  useEffect(() => {
+    if (!notice) return undefined;
+    const timer = window.setTimeout(() => setNotice(''), 3000);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
   const total = useMemo(() => {
     if (!rent || !deposit) return 0;
     return Math.round(((Number(rent) * Number(duration)) + Number(deposit)) * 0.0025 + 1000);
