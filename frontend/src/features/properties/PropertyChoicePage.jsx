@@ -9,9 +9,7 @@ export default function PropertyChoicePage({ user, onChoice, onLogout }) {
     <div className="choice-page">
       <header className="nav choice-nav">
         <div className="mx-auto flex w-full max-w-[1200px] items-center justify-between">
-          <a href="#top" aria-label="NoBroker home">
-            <Brand />
-          </a>
+          <Brand />
           <div className="profile-actions">
             <span>
               Welcome, <span className="font-semibold" style={{ color: NAVY }}>{user.fullName || user.email}</span>

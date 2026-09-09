@@ -19,7 +19,7 @@ function PublicRoutes() {
   const { user } = useAuth();
   const goToChoices = () => navigate('/choices', { replace: true });
 
-  if (user) return <Navigate to="/choices" replace />;
+  if (user && location.pathname !== '/') return <Navigate to="/choices" replace />;
   return <><LandingPage onLogin={() => navigate('/login')} onRegister={() => navigate('/register')} onRentalAgreement={() => navigate('/rental-agreement')} />
     {location.pathname === '/login' && <LoginPage onClose={() => navigate('/')} onSuccess={goToChoices} onRegister={() => navigate('/register')} />}
     {location.pathname === '/register' && <RegisterPage onClose={() => navigate('/')} onSuccess={goToChoices} onLogin={() => navigate('/login')} />}
