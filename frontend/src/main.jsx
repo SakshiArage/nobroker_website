@@ -1,16 +1,17 @@
 import { createRoot } from 'react-dom/client';
-import './style.css';
+import './styles/index.css';
 import App from './App.jsx';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext.jsx';
+import { Provider } from 'react-redux';
+import { store } from './app/store';
 import { getStoredTheme, setHtmlTheme } from './utils/theme.js';
 
 setHtmlTheme(getStoredTheme());
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <AuthProvider>
+  <Provider store={store}>
+    <BrowserRouter>
       <App />
-    </AuthProvider>
-  </BrowserRouter>,
+    </BrowserRouter>
+  </Provider>,
 );

@@ -193,6 +193,7 @@ nobroker_website/
 | `/health` | `GET` | Public | System status and API health check |
 | `/user/register` | `POST` | Public | Register new user account (Full Name, Email, Phone, Password) |
 | `/user/login` | `POST` | Public | Authenticate user & issue HTTP-Only JWT Cookie |
+| `/user/admin/login` | `POST` | Admin only | Authenticate an existing account whose `role` is `admin` |
 | `/user/logout` | `POST` | Public | Clear JWT token cookie |
 | `/user/me` | `GET` | Protected | Fetch current logged-in user profile |
 
